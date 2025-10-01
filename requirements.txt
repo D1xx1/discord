@@ -1,21 +1,7 @@
-# Discord Bot Framework (используем discord.py с voice поддержкой)
-discord.py[voice]
+# Discord Bot Framework
+discord.py
 python-dotenv
-
-# Voice Support
-PyNaCl
-ffmpeg-python
-
-# Speech Recognition
-SpeechRecognition
-pydub
-pyaudio
-
-# Audio Processing
-librosa
-soundfile
 
 # Additional Dependencies
 aiohttp
 aiofiles
-numpy

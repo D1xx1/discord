@@ -1,5 +1,5 @@
 """
-Discord бот с полноценным распознаванием речи в голосовых каналах
+Discord бот
 """
 import asyncio
 import logging
@@ -9,11 +9,8 @@ from discord.ext import commands
 
 # Импортируем модули
 from modules.config import BotConfig
-from modules.ffmpeg_setup import setup_ffmpeg, check_ffmpeg
-from modules.speech_recognition import SpeechRecognizer
 from modules.logger import DiscordLogger
 from modules.commands import BotCommands
-from modules.simple_voice_recorder import SimpleVoiceRecorder
 
 # Настройка логирования
 logging.basicConfig(
@@ -26,9 +23,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Устанавливаем FFmpeg при запуске
-logger.info("Проверяем и устанавливаем FFmpeg...")
-setup_ffmpeg()
 
 # Загружаем конфигурацию
 config = BotConfig()
@@ -42,15 +36,15 @@ intents.voice_states = True
 intents.guild_messages = True
 intents.dm_messages = True
 intents.guild_reactions = True
+intents.guild_emojis_and_stickers = True
+intents.guild_integrations = True
 
 # Создаем бота
 bot = commands.Bot(command_prefix=config.prefix, intents=intents)
 
 # Инициализируем модули
-speech_recognizer = SpeechRecognizer(config)
 discord_logger = DiscordLogger(bot, config)
-voice_recorder = SimpleVoiceRecorder(config, speech_recognizer)
-bot_commands = BotCommands(bot, config, discord_logger, speech_recognizer, voice_recorder)
+bot_commands = BotCommands(bot, config, discord_logger)
 
 @bot.event
 async def on_ready():
@@ -58,9 +52,6 @@ async def on_ready():
     logger.info(f'{bot.user} успешно запущен!')
     logger.info(f'Бот подключен к {len(bot.guilds)} серверам')
     
-    # Создаем папки для логов речи
-    for guild in bot.guilds:
-        speech_recognizer.create_voice_logs_dir(guild.id)
     
     # Показываем информацию о настроенных каналах логов
     for guild in bot.guilds:
@@ -73,7 +64,6 @@ async def on_ready():
             logger.info(f"Сервер {guild.name}: канал логов не настроен")
     
     # Устанавливаем статус
-    ffmpeg_status = "✅ FFmpeg" if check_ffmpeg() else "❌ No FFmpeg"
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.watching, 
@@ -81,21 +71,126 @@ async def on_ready():
         )
     )
 
+# === СОБЫТИЯ СООБЩЕНИЙ ===
+@bot.event
+async def on_message(message):
+    """Обработка новых сообщений"""
+    if not message.author.bot and not message.guild is None:
+        await discord_logger.log_message_create(message)
+    await bot.process_commands(message)
+
+@bot.event
+async def on_message_edit(before, after):
+    """Логирование редактирования сообщений"""
+    if not after.author.bot and not after.guild is None:
+        await discord_logger.log_message_edit(before, after)
+
+@bot.event
+async def on_message_delete(message):
+    """Логирование удаления сообщений"""
+    if not message.author.bot and not message.guild is None:
+        await discord_logger.log_message_delete(message)
+
+@bot.event
+async def on_bulk_message_delete(messages):
+    """Логирование массового удаления сообщений"""
+    if messages and not messages[0].author.bot and not messages[0].guild is None:
+        await discord_logger.log_bulk_message_delete(messages)
+
+# === СОБЫТИЯ УЧАСТНИКОВ ===
+@bot.event
+async def on_member_join(member):
+    """Логирование присоединения участника"""
+    await discord_logger.log_member_join(member)
+
+@bot.event
+async def on_member_remove(member):
+    """Логирование выхода участника"""
+    await discord_logger.log_member_remove(member)
+
+@bot.event
+async def on_member_update(before, after):
+    """Логирование обновления участника"""
+    await discord_logger.log_member_update(before, after)
+
+@bot.event
+async def on_user_update(before, after):
+    """Логирование обновления пользователя"""
+    await discord_logger.log_user_update(before, after)
+
+# === СОБЫТИЯ КАНАЛОВ ===
+@bot.event
+async def on_guild_channel_create(channel):
+    """Логирование создания канала"""
+    await discord_logger.log_channel_create(channel)
+
+@bot.event
+async def on_guild_channel_delete(channel):
+    """Логирование удаления канала"""
+    await discord_logger.log_channel_delete(channel)
+
+@bot.event
+async def on_guild_channel_update(before, after):
+    """Логирование обновления канала"""
+    await discord_logger.log_channel_update(before, after)
+
+# === СОБЫТИЯ РОЛЕЙ ===
+@bot.event
+async def on_guild_role_create(role):
+    """Логирование создания роли"""
+    await discord_logger.log_role_create(role)
+
+@bot.event
+async def on_guild_role_delete(role):
+    """Логирование удаления роли"""
+    await discord_logger.log_role_delete(role)
+
+@bot.event
+async def on_guild_role_update(before, after):
+    """Логирование обновления роли"""
+    await discord_logger.log_role_update(before, after)
+
+# === СОБЫТИЯ РЕАКЦИЙ ===
+@bot.event
+async def on_reaction_add(reaction, user):
+    """Логирование добавления реакции"""
+    if not user.bot and not reaction.message.guild is None:
+        await discord_logger.log_reaction_add(reaction, user)
+
+@bot.event
+async def on_reaction_remove(reaction, user):
+    """Логирование удаления реакции"""
+    if not user.bot and not reaction.message.guild is None:
+        await discord_logger.log_reaction_remove(reaction, user)
+
+@bot.event
+async def on_reaction_clear(message, reactions):
+    """Логирование очистки всех реакций"""
+    if not message.guild is None:
+        await discord_logger.log_reaction_clear(message, reactions)
+
+# === СОБЫТИЯ ГОЛОСОВЫХ КАНАЛОВ ===
 @bot.event
 async def on_voice_state_update(member, before, after):
     """Логирование изменений голосового состояния"""
     await discord_logger.log_voice_state_update(member, before, after)
 
+# === СОБЫТИЯ СЕРВЕРА ===
 @bot.event
-async def on_voice_client_disconnect(voice_client):
-    """Обработка отключения от голосового канала"""
-    try:
-        guild_id = voice_client.guild.id
-        if voice_recorder.is_recording(guild_id):
-            await voice_recorder.stop_recording(guild_id)
-            logger.info(f"Остановлена запись голоса на сервере {guild_id} из-за отключения")
-    except Exception as e:
-        logger.error(f"Ошибка при отключении от голосового канала: {e}")
+async def on_guild_update(before, after):
+    """Логирование обновления сервера"""
+    await discord_logger.log_guild_update(before, after)
+
+@bot.event
+async def on_guild_emojis_update(guild, before, after):
+    """Логирование обновления эмодзи сервера"""
+    await discord_logger.log_guild_emojis_update(guild, before, after)
+
+@bot.event
+async def on_guild_stickers_update(guild, before, after):
+    """Логирование обновления стикеров сервера"""
+    await discord_logger.log_guild_stickers_update(guild, before, after)
+
 
 # Обработка ошибок
 @bot.event
@@ -114,7 +209,7 @@ def main():
     """Основная функция запуска бота"""
     if config.token == 'YOUR_BOT_TOKEN_HERE':
         print("❌ Ошибка: Не установлен токен бота!")
-        print("Установите переменную окружения DISCORD_BOT_TOKEN или отредактируйте working_speech_config.json")
+        print("Установите переменную окружения DISCORD_BOT_TOKEN или отредактируйте config.json")
         return
     
     try:
