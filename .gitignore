@@ -1,0 +1,151 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+bot.log
+
+# Configuration files with sensitive data
+config.json
+multi_server_config.json
+.env
+.env.local
+.env.production
+
+# Discord Bot specific
+# Keep example configs but ignore actual configs
+!config.example.json
+!config.json.example
+!multi_server_config.example.json
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Node modules (if using any JS tools)
+node_modules/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Runtime files
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Discord Bot specific additional files
+# Keep these files in git:
+# - discord_logger_bot.py
+# - advanced_logger_bot.py
+# - start_bot.py
+# - requirements.txt
+# - README.md
+# - DEPLOYMENT.md
+# - QUICK_START.md
+# - examples.py
+# - .gitignore
+
+# Ignore these:
+# - config.json (contains bot token)
+# - bot.log (log files)
+# - .venv/ (virtual environment)
+# - __pycache__/ (Python cache)
