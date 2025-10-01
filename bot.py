@@ -36,8 +36,6 @@ intents.voice_states = True
 intents.guild_messages = True
 intents.dm_messages = True
 intents.guild_reactions = True
-intents.guild_emojis_and_stickers = True
-intents.guild_integrations = True
 
 # Создаем бота
 bot = commands.Bot(command_prefix=config.prefix, intents=intents)
@@ -181,15 +179,16 @@ async def on_guild_update(before, after):
     """Логирование обновления сервера"""
     await discord_logger.log_guild_update(before, after)
 
-@bot.event
-async def on_guild_emojis_update(guild, before, after):
-    """Логирование обновления эмодзи сервера"""
-    await discord_logger.log_guild_emojis_update(guild, before, after)
+# События эмодзи и стикеров (опциональные, требуют специальных интентов)
+# @bot.event
+# async def on_guild_emojis_update(guild, before, after):
+#     """Логирование обновления эмодзи сервера"""
+#     await discord_logger.log_guild_emojis_update(guild, before, after)
 
-@bot.event
-async def on_guild_stickers_update(guild, before, after):
-    """Логирование обновления стикеров сервера"""
-    await discord_logger.log_guild_stickers_update(guild, before, after)
+# @bot.event
+# async def on_guild_stickers_update(guild, before, after):
+#     """Логирование обновления стикеров сервера"""
+#     await discord_logger.log_guild_stickers_update(guild, before, after)
 
 
 # Обработка ошибок
