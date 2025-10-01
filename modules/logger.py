@@ -64,8 +64,7 @@ class DiscordLogger:
         embed = discord.Embed(
             title=title,
             description=description,
-            color=color,
-            timestamp=datetime.utcnow()
+            color=color
         )
         
         if fields:
@@ -83,7 +82,7 @@ class DiscordLogger:
         if footer:
             embed.set_footer(text=footer)
         else:
-            embed.set_footer(text=f"Сервер: {guild_id} | ID: {datetime.utcnow().timestamp()}")
+            embed.set_footer(text=f"Сервер: {guild_id}")
             
         try:
             await log_channel.send(embed=embed)
@@ -118,7 +117,7 @@ class DiscordLogger:
             color=discord.Color.green(),
             fields=[
                 ("ID сообщения", str(message.id), True),
-                ("Время", message.created_at.strftime('%d.%m.%Y %H:%M:%S'), True),
+                ("Время", self.format_time(message.created_at), True),
                 ("Вложения", f"{len(message.attachments)}" if message.attachments else "0", True)
             ],
             thumbnail=message.author.display_avatar.url
@@ -145,7 +144,7 @@ class DiscordLogger:
                 ("Старое содержимое", old_content, False),
                 ("Новое содержимое", new_content, False),
                 ("ID сообщения", str(after.id), True),
-                ("Время редактирования", after.edited_at.strftime('%d.%m.%Y %H:%M:%S') if after.edited_at else "Неизвестно", True)
+                ("Время редактирования", self.format_time(after.edited_at) if after.edited_at else "Неизвестно", True)
             ],
             thumbnail=after.author.display_avatar.url
         )
@@ -168,8 +167,8 @@ class DiscordLogger:
             color=discord.Color.red(),
             fields=[
                 ("ID сообщения", str(message.id), True),
-                ("Время создания", message.created_at.strftime('%d.%m.%Y %H:%M:%S'), True),
-                ("Время удаления", datetime.utcnow().strftime('%d.%m.%Y %H:%M:%S'), True)
+                ("Время создания", self.format_time(message.created_at), True),
+                ("Время удаления", self.format_time(), True)
             ],
             thumbnail=message.author.display_avatar.url
         )
@@ -201,7 +200,7 @@ class DiscordLogger:
                 description=f"**Автор:** {self.format_user_info(user)}\n**Канал:** {messages[0].channel.mention}\n**Количество удаленных сообщений:** {count}",
                 color=discord.Color.dark_red(),
                 fields=[
-                    ("Время удаления", datetime.utcnow().strftime('%d.%m.%Y %H:%M:%S'), True),
+                    ("Время удаления", self.format_time(), True),
                     ("Всего удалено", str(len(messages)), True)
                 ],
                 thumbnail=user.display_avatar.url
@@ -740,3 +739,9 @@ class DiscordLogger:
             discord.ChannelType.forum: "📋"
         }
         return emoji_map.get(channel_type, "❓")
+    
+    def format_time(self, dt=None):
+        """Форматирует время для отображения"""
+        if dt is None:
+            dt = datetime.utcnow()
+        return dt.strftime('%d.%m.%Y %H:%M:%S UTC')

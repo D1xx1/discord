@@ -101,7 +101,7 @@ class BotCommands:
                 description=f"**Статус:** {status.title()}\n**Изменил:** {ctx.author.mention}",
                 color=discord.Color.green() if new_value else discord.Color.red(),
                 fields=[
-                    ("Время изменения", datetime.utcnow().strftime('%d.%m.%Y %H:%M:%S'), True)
+                    ("Время изменения", datetime.utcnow().strftime('%d.%m.%Y %H:%M:%S UTC'), True)
                 ]
             )
             
@@ -140,7 +140,7 @@ class BotCommands:
             await self.discord_logger.send_log(
                 guild_id=ctx.guild.id,
                 title="🧪 Тестовый лог",
-                description=f"**Тест выполнил:** {ctx.author.mention}\n**Время:** {datetime.utcnow().strftime('%d.%m.%Y %H:%M:%S')}",
+                description=f"**Тест выполнил:** {ctx.author.mention}\n**Время:** {datetime.utcnow().strftime('%d.%m.%Y %H:%M:%S UTC')}",
                 color=discord.Color.green(),
                 fields=[
                     ("Сервер", ctx.guild.name, True),
