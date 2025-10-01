@@ -52,6 +52,9 @@ bot.log
 # Configuration files with sensitive data
 config.json
 multi_server_config.json
+speech_config.json
+modern_speech_config.json
+working_speech_config.json
 .env
 .env.local
 .env.production
@@ -61,6 +64,14 @@ multi_server_config.json
 !config.example.json
 !config.json.example
 !multi_server_config.example.json
+!speech_config.example.json
+!modern_speech_config.example.json
+
+# FFmpeg directory
+ffmpeg/
+
+# Voice logs directories
+voice_logs_*/
 
 # Database files
 *.db
