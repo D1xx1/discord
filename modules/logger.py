@@ -3,7 +3,7 @@
 """
 import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, List, Dict, Set
 import discord
 
@@ -67,6 +67,9 @@ class DiscordLogger:
             color=color
         )
         
+        # Добавляем время в embed
+        embed.add_field(name="🕐 Время", value=self.format_time(), inline=True)
+        
         if fields:
             for name, value, inline in fields:
                 if len(str(value)) > 1024:  # Ограничение Discord
@@ -117,7 +120,7 @@ class DiscordLogger:
             color=discord.Color.green(),
             fields=[
                 ("ID сообщения", str(message.id), True),
-                ("Время", self.format_time(message.created_at), True),
+                ("Время создания", self.format_time(message.created_at), True),
                 ("Вложения", f"{len(message.attachments)}" if message.attachments else "0", True)
             ],
             thumbnail=message.author.display_avatar.url
@@ -741,7 +744,15 @@ class DiscordLogger:
         return emoji_map.get(channel_type, "❓")
     
     def format_time(self, dt=None):
-        """Форматирует время для отображения"""
+        """Форматирует время для отображения в UTC+7 (Новосибирское)"""
         if dt is None:
             dt = datetime.utcnow()
-        return dt.strftime('%d.%m.%Y %H:%M:%S UTC')
+        
+        # Конвертируем в UTC+7 (Новосибирское время)
+        novosibirsk_tz = timezone(timedelta(hours=7))
+        if dt.tzinfo is None:
+            # Если время без timezone, считаем его UTC
+            dt = dt.replace(tzinfo=timezone.utc)
+        
+        local_time = dt.astimezone(novosibirsk_tz)
+        return local_time.strftime('%d.%m.%Y %H:%M:%S MSK+4')

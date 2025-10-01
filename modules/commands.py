@@ -4,7 +4,7 @@
 import os
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 import discord
 from discord.ext import commands
@@ -16,6 +16,14 @@ class BotCommands:
         self.bot = bot
         self.config = config
         self.discord_logger = discord_logger
+    
+    def format_time(self):
+        """Форматирует время для отображения в UTC+7 (Новосибирское)"""
+        dt = datetime.utcnow()
+        novosibirsk_tz = timezone(timedelta(hours=7))
+        dt = dt.replace(tzinfo=timezone.utc)
+        local_time = dt.astimezone(novosibirsk_tz)
+        return local_time.strftime('%d.%m.%Y %H:%M:%S MSK+4')
     
     def setup_commands(self):
         """Настраивает команды бота"""
@@ -101,7 +109,7 @@ class BotCommands:
                 description=f"**Статус:** {status.title()}\n**Изменил:** {ctx.author.mention}",
                 color=discord.Color.green() if new_value else discord.Color.red(),
                 fields=[
-                    ("Время изменения", datetime.utcnow().strftime('%d.%m.%Y %H:%M:%S UTC'), True)
+                    ("Время изменения", self.format_time(), True)
                 ]
             )
             
@@ -140,7 +148,7 @@ class BotCommands:
             await self.discord_logger.send_log(
                 guild_id=ctx.guild.id,
                 title="🧪 Тестовый лог",
-                description=f"**Тест выполнил:** {ctx.author.mention}\n**Время:** {datetime.utcnow().strftime('%d.%m.%Y %H:%M:%S UTC')}",
+                description=f"**Тест выполнил:** {ctx.author.mention}\n**Время:** {self.format_time()}",
                 color=discord.Color.green(),
                 fields=[
                     ("Сервер", ctx.guild.name, True),
