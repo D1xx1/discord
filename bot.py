@@ -38,8 +38,8 @@ intents.dm_messages = True
 intents.guild_reactions = True
 intents.presences = True  # Для отслеживания статуса пользователей
 
-# Создаем бота
-bot = commands.Bot(command_prefix=config.prefix, intents=intents)
+# Создаем бота (убираем встроенную команду help)
+bot = commands.Bot(command_prefix=config.prefix, intents=intents, help_command=None)
 
 # Инициализируем модули
 discord_logger = DiscordLogger(bot, config)
