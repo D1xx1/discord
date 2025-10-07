@@ -580,6 +580,127 @@ class DiscordLogger:
             ]
         )
     
+    # === ЛОГИРОВАНИЕ СТАТУСА ПОЛЬЗОВАТЕЛЕЙ ===
+    async def log_presence_update(self, before, after):
+        """Логирует изменения статуса пользователя (онлайн/офлайн)"""
+        if not self.config.log_presence:
+            return
+        
+        # Проверяем, что пользователь изменил статус
+        if before.status == after.status:
+            return
+        
+        # Получаем все серверы, где есть этот пользователь
+        guilds = []
+        for guild in self.bot.guilds:
+            if guild.get_member(after.id):
+                guilds.append(guild)
+        
+        if not guilds:
+            return
+        
+        # Определяем статус
+        status_emojis = {
+            discord.Status.online: "🟢",
+            discord.Status.idle: "🟡", 
+            discord.Status.dnd: "🔴",
+            discord.Status.offline: "⚫"
+        }
+        
+        status_names = {
+            discord.Status.online: "В сети",
+            discord.Status.idle: "Неактивен",
+            discord.Status.dnd: "Не беспокоить",
+            discord.Status.offline: "Не в сети"
+        }
+        
+        old_status = status_names.get(before.status, "Неизвестно")
+        new_status = status_names.get(after.status, "Неизвестно")
+        old_emoji = status_emojis.get(before.status, "❓")
+        new_emoji = status_emojis.get(after.status, "❓")
+        
+        # Отправляем лог во все серверы, где есть пользователь
+        for guild in guilds:
+            await self.send_log(
+                guild_id=guild.id,
+                title="📱 Статус пользователя изменен",
+                description=f"**Пользователь:** {self.format_user_info(after)}",
+                color=discord.Color.blue(),
+                fields=[
+                    ("Старый статус", f"{old_emoji} {old_status}", True),
+                    ("Новый статус", f"{new_emoji} {new_status}", True),
+                    ("ID пользователя", str(after.id), True)
+                ],
+                thumbnail=after.display_avatar.url
+            )
+    
+    async def log_user_activity_update(self, before, after):
+        """Логирует изменения активности пользователя (игра, стрим и т.д.)"""
+        if not self.config.log_presence:
+            return
+        
+        # Проверяем изменения активности
+        if before.activity == after.activity:
+            return
+        
+        # Получаем все серверы, где есть этот пользователь
+        guilds = []
+        for guild in self.bot.guilds:
+            if guild.get_member(after.id):
+                guilds.append(guild)
+        
+        if not guilds:
+            return
+        
+        # Определяем тип активности
+        activity_type_names = {
+            discord.ActivityType.playing: "🎮 Играет в",
+            discord.ActivityType.streaming: "📺 Стримит",
+            discord.ActivityType.listening: "🎵 Слушает",
+            discord.ActivityType.watching: "👀 Смотрит",
+            discord.ActivityType.custom: "💬 Пользовательский статус"
+        }
+        
+        old_activity = self.format_activity(before.activity) if before.activity else "Нет активности"
+        new_activity = self.format_activity(after.activity) if after.activity else "Нет активности"
+        
+        # Отправляем лог во все серверы, где есть пользователь
+        for guild in guilds:
+            await self.send_log(
+                guild_id=guild.id,
+                title="🎯 Активность пользователя изменена",
+                description=f"**Пользователь:** {self.format_user_info(after)}",
+                color=discord.Color.purple(),
+                fields=[
+                    ("Старая активность", old_activity[:1000], False),
+                    ("Новая активность", new_activity[:1000], False),
+                    ("ID пользователя", str(after.id), True)
+                ],
+                thumbnail=after.display_avatar.url
+            )
+    
+    def format_activity(self, activity):
+        """Форматирует активность пользователя для отображения"""
+        if not activity:
+            return "Нет активности"
+        
+        activity_type_names = {
+            discord.ActivityType.playing: "🎮 Играет в",
+            discord.ActivityType.streaming: "📺 Стримит",
+            discord.ActivityType.listening: "🎵 Слушает",
+            discord.ActivityType.watching: "👀 Смотрит",
+            discord.ActivityType.custom: "💬 Пользовательский статус"
+        }
+        
+        activity_type = activity_type_names.get(activity.type, "❓ Неизвестная активность")
+        
+        if activity.type == discord.ActivityType.streaming:
+            return f"{activity_type} **{activity.name}**\n🔗 {activity.url}"
+        elif activity.type == discord.ActivityType.custom:
+            return f"{activity_type}: {activity.name}"
+        else:
+            return f"{activity_type} **{activity.name}**"
+    
     # === ЛОГИРОВАНИЕ ГОЛОСОВЫХ КАНАЛОВ ===
     async def log_voice_state_update(self, member, before, after):
         """Логирует изменения голосового состояния"""

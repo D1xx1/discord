@@ -15,6 +15,7 @@ class BotConfig:
         self.log_members = os.getenv('LOG_MEMBERS', 'true').lower() == 'true'
         self.log_channels = os.getenv('LOG_CHANNELS', 'true').lower() == 'true'
         self.log_roles = os.getenv('LOG_ROLES', 'true').lower() == 'true'
+        self.log_presence = os.getenv('LOG_PRESENCE', 'true').lower() == 'true'
         # Словарь для хранения каналов логов для каждого сервера
         self.server_log_channels: Dict[str, int] = {}
         
@@ -34,6 +35,7 @@ class BotConfig:
                     self.log_members = config.get('log_members', self.log_members)
                     self.log_channels = config.get('log_channels', self.log_channels)
                     self.log_roles = config.get('log_roles', self.log_roles)
+                    self.log_presence = config.get('log_presence', self.log_presence)
                     self.server_log_channels = config.get('server_log_channels', {})
             except Exception as e:
                 print(f"Ошибка загрузки конфигурации: {e}")
@@ -58,6 +60,7 @@ class BotConfig:
             'log_members': self.log_members,
             'log_channels': self.log_channels,
             'log_roles': self.log_roles,
+            'log_presence': self.log_presence,
             'server_log_channels': self.server_log_channels
         }
         

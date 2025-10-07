@@ -36,6 +36,7 @@ intents.voice_states = True
 intents.guild_messages = True
 intents.dm_messages = True
 intents.guild_reactions = True
+intents.presences = True  # Для отслеживания статуса пользователей
 
 # Создаем бота
 bot = commands.Bot(command_prefix=config.prefix, intents=intents)
@@ -115,6 +116,17 @@ async def on_member_update(before, after):
 async def on_user_update(before, after):
     """Логирование обновления пользователя"""
     await discord_logger.log_user_update(before, after)
+
+# === СОБЫТИЯ СТАТУСА ПОЛЬЗОВАТЕЛЕЙ ===
+@bot.event
+async def on_presence_update(before, after):
+    """Логирование изменений статуса пользователя (онлайн/офлайн)"""
+    await discord_logger.log_presence_update(before, after)
+
+@bot.event
+async def on_user_activity_update(before, after):
+    """Логирование изменений активности пользователя (игра, стрим и т.д.)"""
+    await discord_logger.log_user_activity_update(before, after)
 
 # === СОБЫТИЯ КАНАЛОВ ===
 @bot.event
